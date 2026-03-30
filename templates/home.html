@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Low Light Image Enhancer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f0f14;
+      color: #e2e2e8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-brand { font-size: 1.1rem; font-weight: 700; color: #a78bfa; letter-spacing: 0.02em; }
+    .nav-links a {
+      color: #9ca3af;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #e2e2e8; }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 4rem 1rem 2rem;
+    }
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+    }
+    .hero p { color: #9ca3af; font-size: 1rem; max-width: 480px; margin: 0 auto; }
+
+    /* UPLOAD CARD */
+    .upload-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 2.5rem;
+      max-width: 480px;
+      margin: 2rem auto;
+      text-align: center;
+    }
+
+    .drop-zone {
+      border: 2px dashed rgba(167,139,250,0.4);
+      border-radius: 12px;
+      padding: 2.5rem 1.5rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #a78bfa;
+      background: rgba(167,139,250,0.06);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-zone .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .drop-zone p { color: #9ca3af; font-size: 0.9rem; }
+    .drop-zone .filename { color: #a78bfa; margin-top: 0.4rem; font-size: 0.85rem; min-height: 1.2em; }
+
+    .btn-upload {
+      width: 100%;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-upload:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-upload:active { transform: translateY(0); }
+
+    {% if error %}
+    .error-msg {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.88rem;
+    }
+    {% endif %}
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 1.5rem;
+      color: #4b5563;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">✦ LowLight Enhancer</span>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Low Light Image Enhancer</h1>
+  <p>Upload an image and apply enhancement, filtering, and analysis tools.</p>
+</div>
+
+<div class="upload-card">
+  <form action="/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+    <div class="drop-zone" id="dropZone">
+      <input type="file" name="file" id="fileInput" accept="image/*"/>
+      <div class="icon">🖼️</div>
+      <p>Drag & drop or <strong>click to browse</strong></p>
+      <div class="filename" id="fileLabel">No file chosen</div>
+    </div>
+    <button type="submit" class="btn-upload">Upload & Process →</button>
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+  </form>
+</div>
+
+<footer>Built with Flask &amp; OpenCV · Low Light Image Enhancer</footer>
+
+<script>
+  const input = document.getElementById('fileInput');
+  const label = document.getElementById('fileLabel');
+  const zone  = document.getElementById('dropZone');
+
+  input.addEventListener('change', () => {
+    label.textContent = input.files[0] ? input.files[0].name : 'No file chosen';
+  });
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      label.textContent = e.dataTransfer.files[0].name;
+    }
+  });
+</script>
+</body>
+</html>

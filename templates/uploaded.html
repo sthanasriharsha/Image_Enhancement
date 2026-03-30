@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Editor — Low Light Enhancer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f0f14;
+      color: #e2e2e8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-brand { font-size: 1.1rem; font-weight: 700; color: #a78bfa; }
+    .nav-links a { color: #9ca3af; text-decoration: none; margin-left: 1.5rem; font-size: 0.9rem; }
+    .nav-links a:hover { color: #e2e2e8; }
+
+    .layout {
+      display: flex;
+      flex: 1;
+      gap: 0;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 270px;
+      min-width: 220px;
+      background: rgba(255,255,255,0.03);
+      border-right: 1px solid rgba(255,255,255,0.07);
+      padding: 1.25rem 1rem;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section { margin-bottom: 1.5rem; }
+    .sidebar-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+      padding-left: 0.25rem;
+    }
+
+    /* Buttons */
+    form.op { display: block; margin-bottom: 0.35rem; }
+    .btn {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      color: #d1d5db;
+      font-size: 0.83rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .btn:hover { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.4); color: #fff; }
+
+    .btn-highlight {
+      background: linear-gradient(135deg,rgba(124,58,237,0.3),rgba(37,99,235,0.3));
+      border-color: rgba(167,139,250,0.4);
+      color: #c4b5fd;
+      font-weight: 600;
+    }
+    .btn-highlight:hover { background: linear-gradient(135deg,rgba(124,58,237,0.5),rgba(37,99,235,0.5)); }
+
+    .btn-danger { border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+    .btn-danger:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.5); }
+
+    /* Gamma input row */
+    .gamma-row {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      margin-bottom: 0.35rem;
+    }
+    .gamma-row input[type="number"] {
+      width: 60px;
+      padding: 0.45rem 0.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 7px;
+      background: rgba(255,255,255,0.06);
+      color: #e2e2e8;
+      font-size: 0.82rem;
+      flex-shrink: 0;
+    }
+
+    /* Threshold row */
+    .threshold-row {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.35rem;
+    }
+    .threshold-row input[type="number"] {
+      width: 70px;
+      padding: 0.45rem 0.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 7px;
+      background: rgba(255,255,255,0.06);
+      color: #e2e2e8;
+      font-size: 0.82rem;
+    }
+
+    /* MAIN IMAGE AREA */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1.5rem;
+      overflow: auto;
+    }
+
+    .img-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 700px;
+      width: 100%;
+      text-align: center;
+    }
+    .img-card img {
+      max-width: 100%;
+      max-height: 520px;
+      border-radius: 10px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .img-card .caption {
+      margin-top: 0.75rem;
+      color: #6b7280;
+      font-size: 0.8rem;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .top-actions form { margin: 0; }
+    .top-actions .btn { width: auto; padding: 0.5rem 1rem; }
+
+    /* Loading overlay */
+    #loader {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,15,20,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    #loader.active { display: flex; }
+    .spinner {
+      width: 42px; height: 42px;
+      border: 3px solid rgba(167,139,250,0.2);
+      border-top-color: #a78bfa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loader p { color: #a78bfa; font-size: 0.9rem; }
+
+    @media (max-width: 640px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loader">
+  <div class="spinner"></div>
+  <p>Processing…</p>
+</div>
+
+<nav>
+  <span class="nav-brand">✦ LowLight Enhancer</span>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">✨ Low-Light Enhancement</div>
+      <form class="op" action="/clahe" method="POST">
+        <button class="btn btn-highlight" type="submit">CLAHE Enhancement</button>
+      </form>
+      <form class="op" action="/retinex" method="POST">
+        <button class="btn btn-highlight" type="submit">Retinex Enhancement</button>
+      </form>
+      <form class="op" action="/gamma_correction" method="POST">
+        <div class="gamma-row">
+          <input type="number" name="gamma" value="0.5" min="0.1" max="2.0" step="0.05"/>
+          <button class="btn btn-highlight" type="submit" style="flex:1">Gamma Correct</button>
+        </div>
+      </form>
+      <form class="op" action="/denoise" method="POST">
+        <button class="btn btn-highlight" type="submit">Denoise</button>
+      </form>
+      <form class="op" action="/histogram_equalizer" method="POST">
+        <button class="btn btn-highlight" type="submit">Histogram Equalise</button>
+      </form>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">🎨 Colour</div>
+      <form class="op" action="/grayscale" method="POST">
+        <button class="btn" type="submit">Grayscale</button>
+      </form>
+      <form class="op" action="/brightness_addition" method="POST">
+        <button class="btn" type="submit">Brightness +</button>
+      </form>
+      <form class="op" action="/brightness_substraction" method="POST">
+        <button class="btn" type="submit">Brightness −</button>
+      </form>
+      <form class="op" action="/brightness_multiplication" method="POST">
+        <button class="btn" type="submit">Brightness ×</button>
+      </form>
+      <form class="op" action="/brightness_division" method="POST">
+        <button class="btn" type="submit">Brightness ÷</button>
+      </form>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">🔍 Filters</div>
+      <form class="op" action="/edge_detection" method="POST">
+        <button class="btn" type="submit">Edge Detection</button>
+      </form>
+      <form class="op" action="/blur" method="POST">
+        <button class="btn" type="submit">Gaussian Blur</button>
+      </form>
+      <form class="op" action="/sharpening" method="POST">
+        <button class="btn" type="submit">Sharpening</button>
+      </form>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">🔢 Threshold</div>
+      <form class="op" action="/thresholding" method="POST">
+        <div class="threshold-row">
+          <input type="number" name="lower_thres" value="80" min="0" max="255" placeholder="Low"/>
+          <input type="number" name="upper_thres" value="200" min="0" max="255" placeholder="High"/>
+        </div>
+        <button class="btn" type="submit">Apply Threshold</button>
+      </form>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">📐 Transform</div>
+      <form class="op" action="/zoomin" method="POST">
+        <button class="btn" type="submit">Zoom In 2×</button>
+      </form>
+      <form class="op" action="/zoomout" method="POST">
+        <button class="btn" type="submit">Zoom Out ½×</button>
+      </form>
+      <form class="op" action="/move_left" method="POST">
+        <button class="btn" type="submit">← Move Left</button>
+      </form>
+      <form class="op" action="/move_right" method="POST">
+        <button class="btn" type="submit">→ Move Right</button>
+      </form>
+      <form class="op" action="/move_up" method="POST">
+        <button class="btn" type="submit">↑ Move Up</button>
+      </form>
+      <form class="op" action="/move_down" method="POST">
+        <button class="btn" type="submit">↓ Move Down</button>
+      </form>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">📊 Histogram</div>
+      <form class="op" action="/histogram_rgb" method="POST">
+        <button class="btn" type="submit">Show RGB Histogram</button>
+      </form>
+    </div>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="img-card">
+      <img src="{{ url_for('static', filename=file_path) }}" alt="Processed Image"
+           id="resultImg"/>
+      <p class="caption">Current result — use the sidebar controls to process further.</p>
+      <div class="top-actions">
+        <form action="/normal" method="POST">
+          <button class="btn btn-danger" type="submit">↺ Reset to Original</button>
+        </form>
+        <a class="btn" href="{{ url_for('static', filename=file_path) }}" download>
+          ⬇ Download Image
+        </a>
+        <a class="btn" href="/">⬆ Upload New Image</a>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  // Show loading spinner on any form submit
+  document.querySelectorAll('form.op, form').forEach(f => {
+    f.addEventListener('submit', () => {
+      document.getElementById('loader').classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

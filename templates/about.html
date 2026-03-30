@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>About — Low Light Enhancer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Inter',sans-serif; background:#0f0f14; color:#e2e2e8; min-height:100vh; }
+    nav {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 2rem; background:rgba(255,255,255,0.04);
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+    .nav-brand { font-size:1.1rem; font-weight:700; color:#a78bfa; }
+    .nav-links a { color:#9ca3af; text-decoration:none; margin-left:1.5rem; font-size:0.9rem; }
+    main { max-width:700px; margin:3rem auto; padding:0 1.5rem; }
+    h1 { font-size:2rem; margin-bottom:1rem;
+         background:linear-gradient(135deg,#a78bfa,#60a5fa);
+         -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    p  { color:#9ca3af; line-height:1.7; margin-bottom:1rem; }
+    .feature-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem; }
+    .feature-card {
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+      border-radius:12px; padding:1.25rem;
+    }
+    .feature-card h3 { font-size:0.95rem; margin-bottom:0.4rem; color:#c4b5fd; }
+    .feature-card p  { font-size:0.85rem; color:#6b7280; margin:0; }
+  </style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand">✦ LowLight Enhancer</span>
+  <div class="nav-links"><a href="/">Home</a><a href="/about">About</a></div>
+</nav>
+<main>
+  <h1>About This Project</h1>
+  <p>
+    This web app demonstrates classic and modern digital image processing techniques,
+    with a focus on low-light image enhancement.
+  </p>
+  <p>Built with Python, Flask, OpenCV, and NumPy. Hosted on Render.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h3>✨ CLAHE</h3>
+      <p>Contrast Limited Adaptive Histogram Equalisation — best for local contrast improvement.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🌙 Retinex</h3>
+      <p>Illumination normalisation based on the Retinex theory of human vision.</p>
+    </div>
+    <div class="feature-card">
+      <h3>γ Gamma Correction</h3>
+      <p>Simple power-law transform to brighten dark images with adjustable strength.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🔇 Denoising</h3>
+      <p>Fast Non-Local Means denoising to clean up noise introduced by low-light capture.</p>
+    </div>
+    <div class="feature-card">
+      <h3>🔍 Filters</h3>
+      <p>Edge detection, Gaussian blur, and unsharp sharpening via convolution kernels.</p>
+    </div>
+    <div class="feature-card">
+      <h3>📊 Histogram</h3>
+      <p>Per-channel RGB histogram visualisation and equalisation.</p>
+    </div>
+  </div>
+</main>
+</body>
+</html>
